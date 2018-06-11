@@ -11,6 +11,8 @@ extern "C" {
 
 TokenScanner* StringTokenScanner_new(const wchar_t* const source);
 
+void StringTokenScanner_delete(TokenScanner* token_scanner);
+
 #ifdef __cplusplus
 }
 #endif
