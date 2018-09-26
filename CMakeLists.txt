@@ -66,44 +66,47 @@ LIST(APPEND GHERKIN_CLI
 add_library(gherkin SHARED ${GHERKIN_SRS})
 target_link_libraries(gherkin PRIVATE m)
 target_include_directories(gherkin PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include;${CMAKE_CURRENT_SOURCE_DIR}/src>")
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-add_executable(gherkinexe ${GHERKIN_CLI})
-target_link_libraries(gherkinexe PRIVATE m gherkin)
-target_include_directories(gherkinexe PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(BUILD_EXAMPLES)
+    add_executable(gherkinexe ${GHERKIN_CLI})
+    target_link_libraries(gherkinexe PRIVATE m gherkin)
+    target_include_directories(gherkinexe PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_executable(gherkin_generate_tokens ${GENERATE_TOKEN})
-target_link_libraries(gherkin_generate_tokens PRIVATE m gherkin)
 
-file(GLOB GOOD_FEATURE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/testdata/good/*.feature
+    add_executable(gherkin_generate_tokens ${GENERATE_TOKEN})
+    target_link_libraries(gherkin_generate_tokens PRIVATE m gherkin)
+
+    file(GLOB GOOD_FEATURE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/good/*.feature
+            )
+    file(GLOB BAD_FEATURE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/bad/*.feature
+            )
+    add_custom_target(invo DEPENDS invo)
+    add_dependencies(invo gherkinexe)
+    FOREACH(ENTITY ${GOOD_FEATURE_FILES})
+        add_custom_command(
+                TARGET gherkinexe
+                POST_BUILD
+                COMMAND gherkinexe  ${ENTITY}
+                DEPENDS invo
         )
-file(GLOB BAD_FEATURE_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/testdata/bad/*.feature
-        )
-add_custom_target(invo DEPENDS invo)
-add_dependencies(invo gherkinexe)
-FOREACH(ENTITY ${GOOD_FEATURE_FILES})
-    add_custom_command(
-            TARGET gherkinexe
-            POST_BUILD
-            COMMAND gherkinexe  ${ENTITY}
-            DEPENDS invo
-    )
-ENDFOREACH()
-
+    ENDFOREACH()
+endif()
 ############ Installation section ############
 install(
   TARGETS gherkin
   EXPORT gherkin-config
   ARCHIVE DESTINATION lib/
   LIBRARY DESTINATION lib/
-  RUNTIME DESTINATION lib/
-  INCLUDES DESTINATION include)
+  RUNTIME DESTINATION bin/
+  INCLUDES DESTINATION include/gherkin-c)
 
 install(
   DIRECTORY "${PROJECT_SOURCE_DIR}/include/"
-  DESTINATION include
+  DESTINATION include/gherkin-c
   FILES_MATCHING PATTERN "*.*h")
 
 install(
