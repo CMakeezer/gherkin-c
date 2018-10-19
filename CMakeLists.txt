@@ -64,14 +64,20 @@ LIST(APPEND GHERKIN_CLI
 
 
 add_library(gherkin SHARED ${GHERKIN_SRS})
-target_link_libraries(gherkin PRIVATE m)
+if(GNU)
+    target_link_libraries(gherkin PRIVATE m)
+endif()
 target_include_directories(gherkin PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
 if(BUILD_EXAMPLES)
     add_executable(gherkinexe ${GHERKIN_CLI})
-    target_link_libraries(gherkinexe PRIVATE m gherkin)
+    if(GNU)
+        target_link_libraries(gherkinexe PRIVATE m gherkin)
+    elseif(MSVC)
+        target_link_libraries(gherkinexe PRIVATE gherkin)
+    endif()
     target_include_directories(gherkinexe PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 
