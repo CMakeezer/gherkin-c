@@ -63,7 +63,7 @@ LIST(APPEND GHERKIN_CLI
         )
 
 
-add_library(gherkin SHARED ${GHERKIN_SRS})
+add_library(gherkin ${GHERKIN_SRS})
 if(GNU)
     target_link_libraries(gherkin PRIVATE m)
 endif()
